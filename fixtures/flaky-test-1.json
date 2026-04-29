@@ -1,0 +1,12 @@
+{
+  "runId": "flaky-test-1",
+  "workflow": "flaky-test-recovery",
+  "goal": "Stabilize a flaky CI test and record the rerun evidence.",
+  "events": [
+    { "type": "note", "text": "Rerun the failing suite locally before touching CI config." },
+    { "type": "command", "text": "test.run pnpm test --filter flaky-auth" },
+    { "type": "command", "text": "ci.rerun flaky-auth-job" },
+    { "type": "file", "text": "reports/flaky-auth.md" },
+    { "type": "verify", "text": "grep -q '3 green reruns' reports/flaky-auth.md" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "runId": "deploy-hotfix-1",
+  "workflow": "deploy-hotfix",
+  "goal": "Ship a small hotfix and verify the primary API health check returns 200.",
+  "events": [
+    { "type": "note", "text": "Check the live error rate before touching prod." },
+    { "type": "command", "text": "metrics.check api-error-rate" },
+    { "type": "command", "text": "deploy.start hotfix-auth" },
+    { "type": "command", "text": "gh.issue.create rollback-note" },
+    { "type": "file", "text": "deploy/rollback.md" },
+    { "type": "verify", "text": "curl -fsS https://example.test/healthz >/dev/null" }
+  ]
+}

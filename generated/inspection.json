@@ -1,0 +1,108 @@
+{
+  "workflowCount": 3,
+  "workflows": [
+    {
+      "workflow": "support-ticket-triage",
+      "runCount": 2,
+      "uniqueCommands": 8,
+      "artifacts": 2,
+      "verifySteps": 3,
+      "prerequisites": 8,
+      "escalationBranches": 2,
+      "readiness": "high",
+      "frequencyScore": 2,
+      "evidenceScore": 36,
+      "goals": [
+        "Resolve a customer login regression and record a durable fix path.",
+        "Handle an escalated refund ticket that needs billing evidence and customer notification."
+      ],
+      "files": [
+        "docs/login-regression.md",
+        "reports/refund-7780.md"
+      ],
+      "verify": [
+        "grep -q '401 fixed' docs/login-regression.md",
+        "bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/support-ticket-triage.sh 3",
+        "grep -q 'invoice_7780' reports/refund-7780.md"
+      ],
+      "commands": [
+        "ticket.search ACME-4421",
+        "kb.search login regression 401",
+        "crm.search customer=acme",
+        "gh.issue.create regression-note",
+        "ticket.search ACME-7780",
+        "billing.refund invoice_7780",
+        "chat.post refunds-room",
+        "vault.read STRIPE_REFUND_POLICY"
+      ],
+      "notes": [
+        "Inspect the customer ticket and gather the failing account id.",
+        "Escalated support runs often need billing and outbound communication steps."
+      ]
+    },
+    {
+      "workflow": "deploy-hotfix",
+      "runCount": 2,
+      "uniqueCommands": 6,
+      "artifacts": 2,
+      "verifySteps": 2,
+      "prerequisites": 4,
+      "escalationBranches": 1,
+      "readiness": "high",
+      "frequencyScore": 2,
+      "evidenceScore": 26,
+      "goals": [
+        "Ship a small hotfix and verify the primary API health check returns 200.",
+        "Roll a second hotfix through staging and notify ops after the smoke check."
+      ],
+      "files": [
+        "deploy/rollback.md",
+        "reports/hotfix-cache.md"
+      ],
+      "verify": [
+        "curl -fsS https://example.test/healthz >/dev/null",
+        "grep -q 'staging smoke passed' reports/hotfix-cache.md"
+      ],
+      "commands": [
+        "metrics.check api-error-rate",
+        "deploy.start hotfix-auth",
+        "gh.issue.create rollback-note",
+        "deploy.start hotfix-cache",
+        "metrics.check p95-latency",
+        "chat.post ops-room"
+      ],
+      "notes": [
+        "Check the live error rate before touching prod.",
+        "Staging first, then notify ops once smoke passes."
+      ]
+    },
+    {
+      "workflow": "flaky-test-recovery",
+      "runCount": 1,
+      "uniqueCommands": 2,
+      "artifacts": 1,
+      "verifySteps": 1,
+      "prerequisites": 2,
+      "escalationBranches": 0,
+      "readiness": "high",
+      "frequencyScore": 1,
+      "evidenceScore": 11,
+      "goals": [
+        "Stabilize a flaky CI test and record the rerun evidence."
+      ],
+      "files": [
+        "reports/flaky-auth.md"
+      ],
+      "verify": [
+        "grep -q '3 green reruns' reports/flaky-auth.md"
+      ],
+      "commands": [
+        "test.run pnpm test --filter flaky-auth",
+        "ci.rerun flaky-auth-job"
+      ],
+      "notes": [
+        "Rerun the failing suite locally before touching CI config."
+      ]
+    }
+  ]
+}

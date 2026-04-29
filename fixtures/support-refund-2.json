@@ -1,0 +1,14 @@
+{
+  "runId": "support-refund-2",
+  "workflow": "support-ticket-triage",
+  "goal": "Handle an escalated refund ticket that needs billing evidence and customer notification.",
+  "events": [
+    { "type": "note", "text": "Escalated support runs often need billing and outbound communication steps." },
+    { "type": "command", "text": "ticket.search ACME-7780" },
+    { "type": "command", "text": "billing.refund invoice_7780" },
+    { "type": "command", "text": "chat.post refunds-room" },
+    { "type": "command", "text": "vault.read STRIPE_REFUND_POLICY" },
+    { "type": "file", "text": "reports/refund-7780.md" },
+    { "type": "verify", "text": "grep -q 'invoice_7780' reports/refund-7780.md" }
+  ]
+}

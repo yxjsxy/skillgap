@@ -1,0 +1,15 @@
+{
+  "runId": "support-login-1",
+  "workflow": "support-ticket-triage",
+  "goal": "Resolve a customer login regression and record a durable fix path.",
+  "events": [
+    { "type": "note", "text": "Inspect the customer ticket and gather the failing account id." },
+    { "type": "command", "text": "ticket.search ACME-4421" },
+    { "type": "command", "text": "kb.search login regression 401" },
+    { "type": "command", "text": "crm.search customer=acme" },
+    { "type": "command", "text": "gh.issue.create regression-note" },
+    { "type": "file", "text": "docs/login-regression.md" },
+    { "type": "verify", "text": "grep -q '401 fixed' docs/login-regression.md" },
+    { "type": "verify", "text": "bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/support-ticket-triage.sh 3" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "runId": "deploy-hotfix-2",
+  "workflow": "deploy-hotfix",
+  "goal": "Roll a second hotfix through staging and notify ops after the smoke check.",
+  "events": [
+    { "type": "note", "text": "Staging first, then notify ops once smoke passes." },
+    { "type": "command", "text": "deploy.start hotfix-cache" },
+    { "type": "command", "text": "metrics.check p95-latency" },
+    { "type": "command", "text": "chat.post ops-room" },
+    { "type": "file", "text": "reports/hotfix-cache.md" },
+    { "type": "verify", "text": "grep -q 'staging smoke passed' reports/hotfix-cache.md" }
+  ]
+}
