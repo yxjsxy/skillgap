@@ -100,6 +100,8 @@ function aggregate(inputDir) {
     const verify = uniq(workflow.verify);
     const prerequisites = uniq(workflow.prerequisites);
     const escalation = uniq(workflow.escalation);
+    const goals = uniq(workflow.goals);
+    const notes = uniq(workflow.notes);
     const runCount = workflow.goals.length;
     const frequencyScore = runCount;
     const evidenceScore = runCount * 3 + commands.length + files.length * 2 + verify.length * 2 + prerequisites.length + escalation.length * 2;
@@ -116,11 +118,13 @@ function aggregate(inputDir) {
       readiness,
       frequencyScore,
       evidenceScore,
-      goals: uniq(workflow.goals),
+      goals,
       files,
       verify,
       commands,
-      notes: uniq(workflow.notes)
+      prerequisitesList: prerequisites,
+      escalationList: escalation,
+      notes
     };
   });
 
@@ -187,12 +191,49 @@ function ablate(inputDir) {
   return `# SkillGap Ablation\n\n## Full score\n- top workflow: ${workflows[0].workflow}\n- score formula: runs*3 + commands + artifacts*2 + verify*2 + prerequisites + escalation*2\n\n## Without artifact and verify weighting\n- top workflow: ${ablated[0].workflow}\n- score formula: runs*3 + commands + prerequisites\n\n## Interpretation\n- removing artifact and verification weighting makes deploy-hotfix look deceptively comparable, even though support-ticket-triage is easier to validate and promote into a durable skill\n`;
 }
 
+function brief(inputDir) {
+  const workflows = aggregate(inputDir);
+  const top = workflows[0];
+  const runnerUp = workflows[1];
+  const lines = [
+    '# Skill Promotion Brief',
+    '',
+    '## Recommended workflow',
+    `${top.workflow}`,
+    '',
+    `Evidence score: ${top.evidenceScore}`,
+    `Run count: ${top.runCount}`,
+    `Readiness: ${top.readiness}`,
+    '',
+    '## Why this is ready now',
+    `SkillGap ranks ${top.workflow} above ${runnerUp.workflow} because it has the strongest combination of repeat frequency, reusable artifacts, verification trail, prerequisite breadth, and escalation evidence.`,
+    `The top recommendation is not based on recency or lexical order. It is based on proof density that a future agent or teammate can actually reuse.`,
+    '',
+    '## Reusable proof trail',
+    `- Goals: ${top.goals.join(' | ')}`,
+    `- Artifacts: ${top.files.join(' | ') || 'none recorded'}`,
+    `- Verification: ${top.verify.join(' | ') || 'none recorded'}`,
+    `- Commands: ${top.commands.join(' | ') || 'none recorded'}`,
+    `- Prerequisites: ${top.prerequisitesList.join(' | ') || 'none recorded'}`,
+    `- Escalation branches: ${top.escalationList.join(' | ') || 'none recorded'}`,
+    '',
+    '## Why the baseline falls short',
+    `A frequency-only backlog groomer sees a tie at ${top.runCount} runs and cannot justify why ${top.workflow} should be promoted before ${runnerUp.workflow}.`,
+    `SkillGap breaks that tie using validation evidence and artifact richness, which is exactly what matters when turning a workflow into a durable skill.`,
+    '',
+    '## Suggested next step',
+    `Feed ${top.workflow} into Run2Skill or another transcript-to-skill compiler, then keep ${runnerUp.workflow} as the next candidate once its proof trail improves.`,
+    ''
+  ];
+  return `${lines.join('\n')}\n`;
+}
+
 const [, , command, ...argv] = process.argv;
 const { positional, options } = parseArgs(argv);
 const inputDir = positional[0];
 
 if (!command || !inputDir) {
-  console.error('Usage: node cli.js <inspect|rank|compare|ablate> <runs-dir> [--json]');
+  console.error('Usage: node cli.js <inspect|rank|compare|ablate|brief> <runs-dir> [--json]');
   process.exit(1);
 }
 
@@ -200,6 +241,7 @@ if (command === 'inspect') process.stdout.write(inspect(inputDir, options.json))
 else if (command === 'rank') process.stdout.write(rank(inputDir));
 else if (command === 'compare') process.stdout.write(compare(inputDir));
 else if (command === 'ablate') process.stdout.write(ablate(inputDir));
+else if (command === 'brief') process.stdout.write(brief(inputDir));
 else {
   console.error(`Unknown command: ${command}`);
   process.exit(1);

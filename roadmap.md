@@ -3,7 +3,7 @@
 ## 当前状态：🚧 活跃开发中
 - 项目定位：skill promotion backlog groomer，帮 agent builder 从一堆成功 run 里判断“下一份最值得沉淀成 skill 的 workflow 是谁”
 - 完成度：43%
-- 当前状态：MVP 已可运行，包含 workflow inspection、promotion ranking、frequency baseline comparison、artifact/verify ablation、README、实验日志和 harness gate
+- 当前状态：MVP 已可运行，现已补上 promotion brief export，包含 workflow inspection、promotion ranking、frequency baseline comparison、artifact/verify ablation、promotion brief、README、实验日志和 harness gate
 
 ## 项目介绍
 SkillGap 面向已经有成功 agent run、也知道 skill 很重要，但每次都拍脑袋决定先沉淀哪个 workflow 的团队。它不替代 memory，也不替代 transcript-to-skill generator，而是补上前面的那一步：先把 skill promotion backlog 排清楚。
@@ -15,6 +15,7 @@ SkillGap 面向已经有成功 agent run、也知道 skill 很重要，但每次
 - frequency-only baseline comparison
 - ablation for artifact/verify weighting
 - JSON inspection output
+- promotion brief export
 - README + docs/experiments.md
 - harness gate
 
@@ -23,7 +24,7 @@ SkillGap 面向已经有成功 agent run、也知道 skill 很重要，但每次
 ### P0
 - OpenClaw transcript adapter
 - Hermes transcript adapter
-- promotion brief export
+- [x] promotion brief export ✅ (`node cli.js brief fixtures`, commit pending)
 
 ### P1
 - score explanation per workflow
@@ -45,6 +46,8 @@ SkillGap 面向已经有成功 agent run、也知道 skill 很重要，但每次
 - `node cli.js rank fixtures`
 - `node cli.js compare fixtures`
 - `node cli.js ablate fixtures`
+- `node cli.js brief fixtures`
 
 ## 验收
 - `bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/skillgap-mvp.sh 3`
+- `bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/feature-promotion-brief.sh 3`

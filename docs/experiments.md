@@ -53,6 +53,7 @@ Commands:
 node cli.js inspect fixtures --json > generated/inspection.json
 node cli.js rank fixtures > generated/ranking.md
 node cli.js compare fixtures > generated/comparison.md
+node cli.js brief fixtures > generated/promotion-brief.md
 ```
 
 Observed result:
@@ -67,6 +68,7 @@ Observed result:
 Interpretation:
 - frequency alone cannot choose between deploy and support because both repeat twice
 - the support workflow carries a richer proof trail, broader prerequisites, and a stronger escalation branch, which makes it the better next skill candidate
+- the new promotion brief makes that recommendation actionable by emitting goals, proof trail, verification, and a direct Run2Skill-style next step
 - this is the difference between “often repeated” and “ready to codify”
 
 ## Ablation
@@ -93,6 +95,7 @@ Interpretation:
 2. proof trail matters, especially verification and reusable artifacts
 3. candidate selection should happen before transcript-to-skill generation
 4. SkillGap pairs naturally with tools like Run2Skill instead of replacing them
+5. a ranked backlog is more useful when the winning workflow immediately comes with a handoff-ready promotion brief
 
 ## Limits
 

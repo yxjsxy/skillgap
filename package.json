@@ -10,6 +10,7 @@
     "inspect": "node cli.js inspect fixtures",
     "rank": "node cli.js rank fixtures",
     "compare": "node cli.js compare fixtures",
-    "ablate": "node cli.js ablate fixtures"
+    "ablate": "node cli.js ablate fixtures",
+    "brief": "node cli.js brief fixtures"
   }
 }

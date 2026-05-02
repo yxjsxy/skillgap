@@ -25,6 +25,7 @@ SkillGap gives you a deterministic local answer before you invest time in author
 - clusters runs by workflow
 - measures repeat frequency, artifacts, verification trail, prerequisite breadth, and escalation branches
 - ranks which workflows are most ready for promotion into a reusable skill
+- emits a promotion brief for the top workflow so the next packaging step is obvious
 - compares evidence-weighted ranking against a frequency-only baseline
 - runs an ablation to show why verification and artifact weighting matter
 
@@ -51,6 +52,7 @@ node cli.js inspect fixtures --json > generated/inspection.json
 node cli.js rank fixtures > generated/ranking.md
 node cli.js compare fixtures > generated/comparison.md
 node cli.js ablate fixtures > generated/ablation.md
+node cli.js brief fixtures > generated/promotion-brief.md
 ```
 
 ## Example result
@@ -88,6 +90,7 @@ This matters because support and deploy tie on repeat count. A naive frequency-o
 - top evidence score: 36
 - top workflow verify steps: 3
 - top workflow artifacts: 2
+- `node cli.js brief fixtures` now emits a promotion brief with goals, proof trail, verification, prerequisites, and next-step guidance for Run2Skill handoff
 - top-2 verification-plus-artifact richness: 9 vs 9 in this tiny corpus, but SkillGap still breaks the tie in favor of the workflow with the denser proof trail and broader prerequisites
 
 ### Ablation
@@ -97,7 +100,7 @@ See `docs/experiments.md` for setup, metrics, limits, and interpretation.
 
 ## Architecture
 
-- `cli.js` parses successful run fixtures and emits inspection, ranking, comparison, and ablation reports
+- `cli.js` parses successful run fixtures and emits inspection, ranking, comparison, ablation, and promotion-brief reports
 - `fixtures/` bundles a tiny run corpus across support, deploy, and CI stabilization workflows
 - `generated/` stores machine-readable and markdown experiment artifacts
 - `docs/experiments.md` records baseline, experiment design, results, and limits
@@ -110,6 +113,7 @@ The narrative is simple:
 - not every repeated workflow deserves a skill yet
 - frequency alone is too weak a heuristic
 - you should promote the workflow with the best proof trail first
+- once a workflow wins, the next packaging step should already be written down
 
 That story plays well on GitHub, X, and HN because it is specific, easy to demo, and relevant to the current wave of agent tooling.
 
@@ -117,6 +121,7 @@ That story plays well on GitHub, X, and HN because it is specific, easy to demo,
 
 - current input format is structured JSON fixtures, not raw OpenClaw or Hermes transcripts
 - scoring is heuristic, not a learned ranking model
+- the promotion brief is recommendation-quality, not a fully generated `SKILL.md`
 - tiny bundled corpus proves the workflow, not broad external generalization
 - next step should be transcript adapters and larger public benchmark corpora
 
@@ -125,7 +130,7 @@ That story plays well on GitHub, X, and HN because it is specific, easy to demo,
 ### P0
 - OpenClaw transcript adapter
 - Hermes-style transcript adapter
-- emit a `promotion-brief.md` for the top workflow
+- [x] emit a `promotion-brief.md` for the top workflow ✅ (`node cli.js brief fixtures > generated/promotion-brief.md`)
 
 ### P1
 - score explanation per workflow step cluster
