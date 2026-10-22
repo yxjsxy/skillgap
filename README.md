@@ -1,23 +1,6 @@
 # SkillGap
 
-SkillGap ranks which repeated successful agent workflows should be promoted into reusable skills next.
-
-A lot of agent teams already have the raw material for better behavior: successful runs, incident notes, deploy logs, CI fixes, and repeated operator playbooks. The hard part is not generating one more transcript summary. The hard part is deciding which workflow has enough repeated evidence that it deserves to become a durable `SKILL.md` right now.
-
-That is the gap SkillGap closes.
-
-## Why this should exist
-
-Projects like Hermes Agent are making autonomous skill creation and memory much more visible. That is great, but it leaves one practical backlog question unresolved for teams sitting on a pile of successful runs:
-
-Which workflow should we promote into a reusable skill first?
-
-Today the usual baseline is still one of these:
-- count repeated workflows manually in transcripts or notes
-- prioritize whatever somebody remembers was painful last week
-- feed an arbitrary transcript into a skill generator without checking if the workflow is mature enough yet
-
-SkillGap gives you a deterministic local answer before you invest time in authoring or generating the skill.
+Find which repeated agent workflow has the strongest evidence for becoming a reusable skill. SkillGap ranks structured successful-run records and produces a promotion brief; it does not generate or install skills.
 
 ## What it does
 
@@ -29,25 +12,17 @@ SkillGap gives you a deterministic local answer before you invest time in author
 - compares evidence-weighted ranking against a frequency-only baseline
 - runs an ablation to show why verification and artifact weighting matter
 
-## Baseline and positioning
+## Requirements
 
-### What it is not
-- not a memory system
-- not a skill generator
-- not a hosted workflow mining platform
-
-### What it complements
-- **Hermes Agent**: impressive at persisting memory and creating skills after complex tasks, but it does not tell a team which workflow in a backlog of successful runs is the best next candidate to promote
-- **agent-skill-creator** and transcript-to-skill tools: useful when you already know what you want to package, but they assume candidate selection has happened
-- **manual transcript review**: still common, but noisy and easy to bias toward recency instead of evidence
-
-SkillGap sits one step earlier in the loop. It tells you where to spend your skill-authoring energy.
+Node.js 18 or newer and Git. These commands use Node built-ins; no hosted service or API key is needed.
 
 ## Quick start
 
 ```bash
-cd ~/Documents/vibe_coding/skillgap
+git clone https://github.com/yxjsxy/skillgap.git
+cd skillgap
 node cli.js inspect fixtures
+mkdir -p generated
 node cli.js inspect fixtures --json > generated/inspection.json
 node cli.js rank fixtures > generated/ranking.md
 node cli.js compare fixtures > generated/comparison.md
@@ -55,67 +30,13 @@ node cli.js ablate fixtures > generated/ablation.md
 node cli.js brief fixtures > generated/promotion-brief.md
 ```
 
-## Example result
+## Use your own data
 
-Bundled corpus result:
-- 3 workflows in the run corpus
-- `support-ticket-triage` ranked first
-- `deploy-hotfix` tied on frequency but lost on proof richness
-- frequency-only backlog grooming left a top tie unresolved
-- evidence-weighted ranking selected the workflow with the strongest validation trail
+Pass a directory of JSON run records. Each record needs a `workflow` and a nonempty `events` array. Event types such as `command`, `file`, `verify`, and `note` carry text evidence; the bundled `fixtures/` show the input format. Raw chat transcripts require conversion before use.
 
-## How to validate
+## Read the results
 
-```bash
-bash ~/.openclaw/workspace/scripts/coding_harness.sh gates/skillgap-mvp.sh 3
-```
-
-## Experiments and comparison
-
-### Comparison target
-SkillGap is explicitly compared against a frequency-only baseline because that is the most common lightweight heuristic teams use when deciding what to codify next.
-
-### Bundled experiment
-The bundled corpus contains:
-- 2 successful `support-ticket-triage` runs
-- 2 successful `deploy-hotfix` runs
-- 1 successful `flaky-test-recovery` run
-
-This matters because support and deploy tie on repeat count. A naive frequency-only ranking cannot tell you which one is more ready to become a durable skill.
-
-### Observed results
-- frequency-only top tie count: 2
-- frequency-only top candidate: `deploy-hotfix` by lexical tiebreak, not evidence
-- SkillGap top candidate: `support-ticket-triage`
-- top evidence score: 36
-- top workflow verify steps: 3
-- top workflow artifacts: 2
-- `node cli.js brief fixtures` now emits a promotion brief with goals, proof trail, verification, prerequisites, and next-step guidance for Run2Skill handoff
-- top-2 verification-plus-artifact richness: 9 vs 9 in this tiny corpus, but SkillGap still breaks the tie in favor of the workflow with the denser proof trail and broader prerequisites
-
-### Ablation
-When artifact and verification weighting are removed, `deploy-hotfix` becomes deceptively competitive. That is exactly the failure mode SkillGap is designed to avoid.
-
-See `docs/experiments.md` for setup, metrics, limits, and interpretation.
-
-## Architecture
-
-- `cli.js` parses successful run fixtures and emits inspection, ranking, comparison, ablation, and promotion-brief reports
-- `fixtures/` bundles a tiny run corpus across support, deploy, and CI stabilization workflows
-- `generated/` stores machine-readable and markdown experiment artifacts
-- `docs/experiments.md` records baseline, experiment design, results, and limits
-- `gates/skillgap-mvp.sh` is the formal harness gate
-
-## Why open source developers might care
-
-The narrative is simple:
-- your best workflows are already hiding in your successful runs
-- not every repeated workflow deserves a skill yet
-- frequency alone is too weak a heuristic
-- you should promote the workflow with the best proof trail first
-- once a workflow wins, the next packaging step should already be written down
-
-That story plays well on GitHub, X, and HN because it is specific, easy to demo, and relevant to the current wave of agent tooling.
+`inspect` exposes collected signals; `rank` lists evidence-weighted candidates; `compare` contrasts frequency-only ranking; `ablate` removes evidence weights; `brief` produces a Markdown authoring handoff. Scores are heuristic priorities, not a guarantee that a workflow is safe to automate.
 
 ## Limitations
 
@@ -125,19 +46,6 @@ That story plays well on GitHub, X, and HN because it is specific, easy to demo,
 - tiny bundled corpus proves the workflow, not broad external generalization
 - next step should be transcript adapters and larger public benchmark corpora
 
-## Roadmap
+## Examples and evaluation
 
-### P0
-- OpenClaw transcript adapter
-- Hermes-style transcript adapter
-- [x] emit a `promotion-brief.md` for the top workflow ✅ (`node cli.js brief fixtures > generated/promotion-brief.md`)
-
-### P1
-- score explanation per workflow step cluster
-- repo-wide skill coverage heatmap
-- export top candidate directly into Run2Skill input format
-
-### P2
-- GitHub Action
-- hosted dashboard
-- skill promotion trend reports over time
+The bundled `fixtures/` provide reproducible examples. See [experiment notes](docs/experiments.md) for the historical benchmark setup and its limits; those fixture results are not guarantees for other inputs.
